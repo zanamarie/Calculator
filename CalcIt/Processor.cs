@@ -6,23 +6,22 @@ using System.Threading.Tasks;
 
 namespace CalcIt
 {
-    public class Processor
-    {
-        public double BinaryOperations(string operation,double operator1,double operator2)
+    public static class Processor
+    { 
+        public static void CalculateBinaryOperation(string operation, double operand1, double operand2,ref Stack<double> operands)
         {
             switch (operation)
             {
                 case "+":
-                    return operator1 + operator2;
+                    operands.Push(operand1 + operand2); break;
                 case "-":
-                    return operator1 - operator2;
+                    operands.Push(operand1 - operand2); break;
                 case "*":
-                    return operator1 * operator2;
+                    operands.Push(operand1 * operand2); break;
                 case "/":
-                    return operator1 / operator2;
+                    operands.Push(operand1 / operand2); break;
                 default:
-
-                   throw new Exception();
+                    throw new Exception();
             }
         }
     }
