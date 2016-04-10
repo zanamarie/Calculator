@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CalcIt
 {
-    public static class Processor
+    public partial class Calculator
     { 
         public static void CalculateBinaryOperation(string operation, double operand1, double operand2,ref Stack<double> operands)
         {
