@@ -7,26 +7,26 @@ using System.Threading.Tasks;
 
 namespace CalcIt
 {
-    public static class Parser
+    public partial class Calculator
     {
-        static string expression;
+        public static string expression;
         public static Stack<double> operands;
         public static Stack<string> operators;
-        static string token;
-
-        private static void ResetCalculator()
+        public static int tokenPosition;
+        public static string token;
+        public Calculator()
         {
             operands = new Stack<double>();
             operators = new Stack<string>();
             operators.Push(Token.StartEndToken);
-            Token.tokenPosition = -1;
+            tokenPosition = -1;
             token = Token.NullToken;
         }
 
-        public static double CalculateExpression(string requirementStatement)
+        public double CalculateExpression(string expr)
         {
-            ResetCalculator();
-            expression = CheckIfUserWantsToExit(requirementStatement);
+            expression = expr;
+            CheckIfUserWantsToExit(expression);
             if (NormalizeExpression(ref expression))
                 return ParseExpression();
             else
@@ -48,7 +48,7 @@ namespace CalcIt
         {
             ParseExpressionInTokenLevel();
 
-            while (CheckIfTokenIsBinaryOperator(token))
+            while (Token.CheckIfTokenIsBinaryOperator(token))
             {
                 PushOperatorOrDoBinaryAction();
                 ParseExpressionInTokenLevel();
@@ -63,7 +63,7 @@ namespace CalcIt
         {
             GetNextToken();
 
-            if (CheckIfTokenIsDigit(token))
+            if (Token.CheckIfTokenIsDigit(token))
                 ParseDigit();
             else if (token == Token.LeftBracket)
             {
@@ -80,7 +80,7 @@ namespace CalcIt
 
         public static void PushOperatorOrDoBinaryAction()
         {
-            while (CheckOperatorPriority(operators.Peek()) >= CheckOperatorPriority(token))
+            while (CheckBinaryTokenPriority(operators.Peek()) >= CheckBinaryTokenPriority(token))
             {
                 PopOperatorAndDoBinaryAction();
             }
@@ -91,19 +91,20 @@ namespace CalcIt
         {
             double secondOperand = operands.Pop();
             double firstOperand = operands.Pop();
-            Processor.CalculateBinaryOperation(operators.Pop(), firstOperand, secondOperand, ref operands);
+            CalculateBinaryOperation(operators.Pop(), firstOperand, secondOperand, ref operands);
         }
 
-        public static bool CheckIfTokenIsDigit(string token)
+        public static void GetNextToken()
         {
-            return Regex.IsMatch(token.ToString(), @"^[0-9]+$");
+            if (token != Token.StartEndToken)
+                token = expression[++tokenPosition].ToString();
         }
 
         public static void ParseDigit()
         {
             StringBuilder number = new StringBuilder();
 
-            while (CheckIfTokenIsDigit(token))
+            while (Token.CheckIfTokenIsDigit(token))
             {
                 number.Append(token);
                 GetNextToken();
@@ -111,40 +112,10 @@ namespace CalcIt
             operands.Push(double.Parse(number.ToString()));
         }
 
-        public static bool CheckIfTokenIsBinaryOperator(string token)
+        public static void CheckIfUserWantsToExit(string expression)
         {
-            return Array.IndexOf(Token.binaryOperators, token) != -1;
-        }
-
-        public static void GetNextToken()
-        {
-            if (token != "$")
-                token = expression[++Token.tokenPosition].ToString();
-        }
-
-        private static int CheckOperatorPriority(string operatorToBeChecked)
-        {
-            switch (operatorToBeChecked)
-            {
-                case Token.Add: return 1;
-                case Token.Subtract: return 1;
-                case Token.Multiply: return 2;
-                case Token.Divide: return 2;
-                case Token.LeftBracket: return 3;
-                case Token.RightBracket: return 3;
-                default: return 0;
-            }
-        }
-
-        public static string CheckIfUserWantsToExit(string requirementStatement)
-        {
-            Console.WriteLine(requirementStatement);
-            var inputValue = Console.ReadLine();
-
-            if (inputValue.Contains("exit"))
+            if (expression.Contains("exit"))
                 Environment.Exit(0);
-
-            return inputValue;
         }
     }
 }
